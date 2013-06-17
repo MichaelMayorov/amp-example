@@ -1,4 +1,7 @@
+import sys
+from twisted.internet import reactor
 from twisted.protocols import amp
+from twisted.python import log
 
 class GetInfo(amp.Command):
     arguments = []
@@ -52,13 +55,13 @@ class Bot(amp.AMP):
 
 
 def main():
-    from twisted.internet import reactor
     from twisted.internet.protocol import Factory
     pf = Factory()
     pf.protocol = Bot
     reactor.listenTCP(1234, pf)
-    print 'started'
-    reactor.run()
+    log.msg('server started')
 
 if __name__ == '__main__':
+    log.startLogging(sys.stderr)
     main()
+    reactor.run()
