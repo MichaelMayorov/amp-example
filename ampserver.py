@@ -2,28 +2,12 @@ import sys
 from twisted.internet import reactor
 from twisted.protocols import amp
 from twisted.python import log
-
-class GetInfo(amp.Command):
-    arguments = []
-    response = [
-        ('commands', amp.AmpList([
-            ('name', amp.String()),
-            ('version', amp.Integer()),
-            ])
-        ),
-        ('environ', amp.AmpList([
-            ('key', amp.String()),
-            ('value', amp.String()),
-            ])
-        ),
-        ('system', amp.String()),
-        ('basedir', amp.String()),
-        ('version', amp.String()),
-    ]
+from protocols import GetInfo
 
 
 class Bot(amp.AMP):
-    def get_info(self):
+    @GetInfo.responder
+    def getInfo(self):
         commands = [
             {'name': 'shell', 'version': 1},
             {'name': 'uploadFile', 'version': 1},
@@ -51,7 +35,6 @@ class Bot(amp.AMP):
         return {'commands': commands, 'environ': environ, 'system': system,
             'basedir': basedir, 'version': version,
         }
-    GetInfo.responder(get_info)
 
 
 def main():

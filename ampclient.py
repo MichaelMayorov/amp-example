@@ -4,7 +4,7 @@ from twisted.internet import reactor, defer
 from twisted.internet.protocol import ClientCreator
 from twisted.protocols import amp
 from twisted.python import log
-from ampserver import GetInfo
+from protocols import GetInfo
 
 
 def doConnection():
@@ -20,7 +20,7 @@ def doConnection():
     def done(result):
         log.msg('Slave info: %s' % pprint.pformat(result))
         reactor.stop()
-    defer.DeferredList([getInfo,]).addCallback(done)
+    getInfo.addCallback(done)
 
 def main():
     doConnection()
