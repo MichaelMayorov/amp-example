@@ -2,7 +2,7 @@ import sys
 from twisted.internet import reactor
 from twisted.protocols import amp
 from twisted.python import log
-from protocols import GetInfo
+from protocols import GetInfo, SetBuilderList
 
 
 class Bot(amp.AMP):
@@ -35,6 +35,14 @@ class Bot(amp.AMP):
         return {'commands': commands, 'environ': environ, 'system': system,
             'basedir': basedir, 'version': version,
         }
+
+    @SetBuilderList.responder
+    def setBuilderList(self, builders):
+        log.msg('Setting builders')
+        for builder_name, build_dir in builders:
+            log.msg("(%s, %s)" % (builder_name, build_dir))
+        log.msg('Done with builders')
+        return {'result': 0} # assume that all builder were created successfully
 
 
 def main():
