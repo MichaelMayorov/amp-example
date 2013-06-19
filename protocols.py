@@ -26,10 +26,10 @@ class SetBuilderList(amp.Command):
     This can be called after the initial connection is established, with a new
     list, to add or remove builders.
     """
-    arguments = [
+    arguments = [ ('builders', 
         amp.AmpList([
-            ('builder_name', amp.String()),
+            ('name', amp.String()),
             ('dir', amp.String()),
-        ])
+        ]))
     ]
     response = [('result', amp.Integer())] #  0 for success, 1 or others are error codes

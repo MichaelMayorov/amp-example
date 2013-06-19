@@ -17,9 +17,10 @@ def doConnection():
     setBuilderList = creator.connectTCP('127.0.0.1', 1234)
     def connected(ampProto):
         builders = [
-            [('builder_name', 'python2.7'), ('dir', '/build/py2.7')],
-            [('builder_name', 'python3'), ('dir', '/build/py3')]
-        ]
+            {'name': 'python2.7', 'dir': '/build/py2.7'},
+            {'name': 'python3', 'dir': '/build/py3'}
+            ]
+
         return ampProto.callRemote(SetBuilderList, builders=builders)
     setBuilderList.addCallback(connected)
 

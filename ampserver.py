@@ -39,8 +39,8 @@ class Bot(amp.AMP):
     @SetBuilderList.responder
     def setBuilderList(self, builders):
         log.msg('Setting builders')
-        for builder_name, build_dir in builders:
-            log.msg("(%s, %s)" % (builder_name, build_dir))
+        for builder in builders:
+            log.msg("(%s, %s)" % (builder['name'], builder['dir']))
         log.msg('Done with builders')
         return {'result': 0} # assume that all builder were created successfully
 
