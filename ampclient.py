@@ -9,10 +9,10 @@ from protocols import GetInfo, SetBuilderList
 
 def doConnection():
     creator = ClientCreator(reactor, amp.AMP)
-    conn = creator.connectTCP('127.0.0.1', 1234)
+    d = creator.connectTCP('127.0.0.1', 1234)
     def getInfoConnected(ampProto):
         return ampProto.callRemote(GetInfo)
-    conn.addCallback(getInfoConnected)
+    d.addCallback(getInfoConnected)
 
     def setBuilderListConnected(ampProto):
         builders = [
@@ -20,22 +20,27 @@ def doConnection():
             {'name': 'python3', 'dir': '/build/py3'}
             ]
         return ampProto.callRemote(SetBuilderList, builders=builders)
-    conn.addCallback(setBuilderListConnected)
+    d.addCallback(setBuilderListConnected)
 
 
     def getInfoDone(result):
         log.msg('Slave info: %s' % pprint.pformat(result))
-    conn.addCallback(getInfoDone)
+    d.addCallback(getInfoDone)
     def setBuilderListDone(result):
         log.msg('Slave setBuilderList result: %d' % result)
-    conn.addCallback(setBuilderListDone)
-    reactor.stop() # kills connection even if one of this function uses it
-
+    d.addCallback(setBuilderListDone)
+    return d
 
 def main():
-    doConnection()
+    d = doConnection()
+    return d
 
 if __name__ == '__main__':
     log.startLogging(sys.stderr)
-    main()
+    d = main()
+    @d.addBoth
+    def stop(x):
+        reactor.stop()
+        return x
+    d.addErrback(log.msg, 'from ampclient')
     reactor.run()
