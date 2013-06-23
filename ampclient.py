@@ -1,39 +1,52 @@
 import sys
 import pprint
 from twisted.internet import reactor, defer
-from twisted.internet.protocol import ClientCreator
+from twisted.internet.protocol import Factory
 from twisted.protocols import amp
 from twisted.python import log
 from protocols import GetInfo, SetBuilderList
+from twisted.internet.endpoints import TCP4ClientEndpoint
 
+@defer.inlineCallbacks
+def getInfo(ampProto):
+    info = yield ampProto.callRemote(GetInfo)
+    defer.returnValue(info)
 
+@defer.inlineCallbacks
+def setBuilders(ampProto):
+    builders = [
+        {'name': 'python2.7', 'dir': '/build/py2.7'},
+        {'name': 'python3', 'dir': '/build/py3'}
+        ]
+    builderListResult = yield ampProto.callRemote(SetBuilderList, builders=builders) 
+    defer.returnValue(builderListResult)
+
+@defer.inlineCallbacks
 def doConnection():
-    creator = ClientCreator(reactor, amp.AMP)
-    getInfo = creator.connectTCP('127.0.0.1', 1234)
-    def connected(ampProto):
-        return ampProto.callRemote(GetInfo)
-    getInfo.addCallback(connected)
+    def connect():
+        endpoint = TCP4ClientEndpoint(reactor, "127.0.0.1", 1234)
+        factory = Factory()
+        factory.protocol = amp.AMP
+        return endpoint.connect(factory)
+    ampProto = yield connect()
 
-    setBuilderList = creator.connectTCP('127.0.0.1', 1234)
-    def connected(ampProto):
-        builders = [
-            {'name': 'python2.7', 'dir': '/build/py2.7'},
-            {'name': 'python3', 'dir': '/build/py3'}
-            ]
+    info, builderListResult = yield defer.gatherResults([
+            getInfo(ampProto),
+            setBuilders(ampProto)])
 
-        return ampProto.callRemote(SetBuilderList, builders=builders)
-    setBuilderList.addCallback(connected)
-
-
-    def done(result):
-        log.msg('Slave info: %s' % pprint.pformat(result))
-        reactor.stop()
-    getInfo.addCallback(done)
+    log.msg('Slave info: %s' % pprint.pformat(info))
+    log.msg('Slave setBuilderList result: %s' % builderListResult)
 
 def main():
-    doConnection()
+    d = doConnection()
+    return d
 
 if __name__ == '__main__':
     log.startLogging(sys.stderr)
-    main()
+    d = main()
+    @d.addBoth
+    def stop(x):
+        reactor.stop()
+        return x
+    d.addErrback(log.msg, 'from ampclient')
     reactor.run()
