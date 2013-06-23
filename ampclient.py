@@ -36,7 +36,6 @@ def doConnection():
 
     log.msg('Slave info: %s' % pprint.pformat(info))
     log.msg('Slave setBuilderList result: %s' % builderListResult)
-    yield ampProto
 
 def main():
     d = doConnection()
