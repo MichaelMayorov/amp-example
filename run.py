@@ -1,8 +1,8 @@
 import sys
 from twisted.python import log
 from twisted.internet import reactor
-import ampclient
-import ampserver
+import fake_master
+import fake_slave
 
 class Logger(log.Logger):
 
@@ -15,13 +15,13 @@ class Logger(log.Logger):
 
 if __name__ == "__main__":
     log.startLogging(sys.stderr)
-    log.callWithLogger(Logger('ampserver'), ampserver.main)
+    log.callWithLogger(Logger('fake_slave'), fake_slave.main)
     def runClientAndStop():
-        d = ampclient.main()
+        d = fake_master.main()
         @d.addBoth
         def stop(x):
             reactor.stop()
             return x
-        d.addErrback(log.msg, 'from ampclient')
-    log.callWithLogger(Logger('ampclient'), runClientAndStop)
+        d.addErrback(log.msg, 'from fake_master')
+    log.callWithLogger(Logger('fake_master'), runClientAndStop)
     reactor.run()

@@ -48,5 +48,5 @@ if __name__ == '__main__':
     def stop(x):
         reactor.stop()
         return x
-    d.addErrback(log.msg, 'from ampclient')
+    d.addErrback(log.msg, 'from fake_master')
     reactor.run()

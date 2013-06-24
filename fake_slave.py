@@ -42,7 +42,7 @@ class Bot(amp.AMP):
         for builder in builders:
             log.msg("(%s, %s)" % (builder['name'], builder['dir']))
         log.msg('Done with builders')
-        return {'result': 0} # assume that all builder were created successfully
+        return {'result': 0} # assume that all builders were created successfully
 
 
 def main():
@@ -50,7 +50,7 @@ def main():
     pf = Factory()
     pf.protocol = Bot
     reactor.listenTCP(1234, pf)
-    log.msg('server started')
+    log.msg('fake_slave can now accept request from fake_master')
 
 if __name__ == '__main__':
     log.startLogging(sys.stderr)
