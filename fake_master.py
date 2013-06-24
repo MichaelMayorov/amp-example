@@ -4,7 +4,7 @@ from twisted.internet import reactor, defer
 from twisted.internet.protocol import Factory
 from twisted.protocols import amp
 from twisted.python import log
-from protocols import GetInfo, SetBuilderList
+from protocols import GetInfo, SetBuilderList, RemotePrint
 from twisted.internet.endpoints import TCP4ClientEndpoint
 
 @defer.inlineCallbacks
@@ -22,6 +22,12 @@ def setBuilders(ampProto):
     defer.returnValue(builderListResult)
 
 @defer.inlineCallbacks
+def remotePrint(ampProto):
+    message = "Just test message from master"
+    res = yield ampProto.callRemote(RemotePrint, message=message)
+    defer.returnValue(res)
+
+@defer.inlineCallbacks
 def doConnection():
     def connect():
         endpoint = TCP4ClientEndpoint(reactor, "127.0.0.1", 1234)
@@ -30,12 +36,15 @@ def doConnection():
         return endpoint.connect(factory)
     ampProto = yield connect()
 
-    info, builderListResult = yield defer.gatherResults([
+    info, builderListResult, remPrintRes = yield defer.gatherResults([
             getInfo(ampProto),
-            setBuilders(ampProto)])
+            setBuilders(ampProto),
+            remotePrint(ampProto),
+    ])
 
     log.msg('Slave info: %s' % pprint.pformat(info))
     log.msg('Slave setBuilderList result: %s' % builderListResult)
+    log.msg('Remote print result: %s' % remPrintRes)
 
 def main():
     d = doConnection()
