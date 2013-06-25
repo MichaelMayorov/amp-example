@@ -33,3 +33,10 @@ class SetBuilderList(amp.Command):
         ]))
     ]
     response = [('result', amp.Integer())] #  0 for success, 1 or others are error codes
+
+class RemotePrint(amp.Command):
+    """
+    Adds a message to the slave logfile
+    """
+    arguments = [('message', amp.String())]
+    response = [('result', amp.Integer())] # 0 if OK, 1 if not

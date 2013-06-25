@@ -2,7 +2,7 @@ import sys
 from twisted.internet import reactor
 from twisted.protocols import amp
 from twisted.python import log
-from protocols import GetInfo, SetBuilderList
+from protocols import GetInfo, SetBuilderList, RemotePrint
 
 
 class Bot(amp.AMP):
@@ -43,6 +43,11 @@ class Bot(amp.AMP):
             log.msg("(%s, %s)" % (builder['name'], builder['dir']))
         log.msg('Done with builders')
         return {'result': 0} # assume that all builders were created successfully
+
+    @RemotePrint.responder
+    def remotePrint(self, message):
+        log.msg('Message from master: "%s"' % message)
+        return {'result': 0}
 
 
 def main():
