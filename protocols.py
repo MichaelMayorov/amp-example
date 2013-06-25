@@ -40,3 +40,22 @@ class RemotePrint(amp.Command):
     """
     arguments = [('message', amp.String())]
     response = [('result', amp.Integer())] # 0 if OK, 1 if not
+
+class RemoteStartCommand(amp.Command):
+    """
+    Execute a command
+    """
+    arguments = [
+        ('environ', amp.AmpList([
+            ('key', amp.String()),
+            ('value', amp.String()),
+            ])
+        ),
+        ('command', amp.String()),
+        ('args', amp.ListOf(amp.String())),
+        ('builder', amp.String()),
+    ]
+    response = [
+        ('result', amp.Integer()),
+        ('builder', amp.String()),
+    ]
