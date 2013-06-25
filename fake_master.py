@@ -47,12 +47,12 @@ def doConnection():
         return endpoint.connect(factory)
     ampProto = yield connect()
 
-    info, builderListResult, remPrintRes, remStartCmd = yield defer.gatherResults([
+    info, builderListResult = yield defer.gatherResults([
             getInfo(ampProto),
-            setBuilders(ampProto),
-            remotePrint(ampProto),
-            remoteStartCommand(ampProto),
+            setBuilders(ampProto)
     ])
+    remPrintRes = yield remotePrint(ampProto)
+    remStartCmd = yield remoteStartCommand(ampProto)
 
     log.msg('Slave info: %s' % pprint.pformat(info))
     log.msg('Slave setBuilderList result: %s' % builderListResult)
