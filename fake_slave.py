@@ -1,8 +1,9 @@
 import sys
+import pprint
 from twisted.internet import reactor
 from twisted.protocols import amp
 from twisted.python import log
-from protocols import GetInfo, SetBuilderList, RemotePrint
+from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand
 
 
 class Bot(amp.AMP):
@@ -48,6 +49,14 @@ class Bot(amp.AMP):
     def remotePrint(self, message):
         log.msg('Message from master: "%s"' % message)
         return {'result': 0}
+
+    @RemoteStartCommand.responder
+    def remoteStartCommand(self, environ, command, args, builder):
+        log.msg('Master ask me to execute a command: "%s" "%s' % (
+                command, " ".join(args)
+        ))
+        log.msg('For builder: "%s" with environ: %s' % (builder, pprint.pformat(environ)))
+        return {'result': 0, 'builder': builder}
 
 
 def main():
