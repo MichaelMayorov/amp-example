@@ -4,8 +4,9 @@ from twisted.internet import reactor, defer
 from twisted.internet.protocol import Factory
 from twisted.protocols import amp
 from twisted.python import log
-from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand
+from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog
 from twisted.internet.endpoints import TCP4ClientEndpoint
+
 
 @defer.inlineCallbacks
 def getInfo(ampProto):
@@ -59,16 +60,28 @@ def doConnection():
     log.msg('Remote print result: %s' % remPrintRes)
     log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
 
+
+class Master(amp.AMP):
+    @RemoteAcceptLog.responder
+    def remoteAcceptLog(self, line):
+        log.msg('Slave send me a log line: %s' % line)
+        return {'result': 0}
+
+
 def main():
+    pf = Factory()
+    pf.protocol = Master
+    reactor.listenTCP(1235, pf)
+    log.msg('fake_master can now accept request from fake_slave')
     d = doConnection()
     return d
 
 if __name__ == '__main__':
     log.startLogging(sys.stderr)
     d = main()
-    @d.addBoth
-    def stop(x):
-        reactor.stop()
-        return x
-    d.addErrback(log.msg, 'from fake_master')
+#    @d.addBoth
+#    def stop(x):
+#        reactor.stop()
+#        return x
+#    d.addErrback(log.msg, 'from fake_master')
     reactor.run()

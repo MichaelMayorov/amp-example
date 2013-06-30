@@ -1,9 +1,9 @@
 import sys
 import pprint
-from twisted.internet import reactor
+from twisted.internet import reactor, defer
 from twisted.protocols import amp
 from twisted.python import log
-from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand
+from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog
 
 
 class Bot(amp.AMP):
@@ -52,11 +52,32 @@ class Bot(amp.AMP):
 
     @RemoteStartCommand.responder
     def remoteStartCommand(self, environ, command, args, builder):
-        log.msg('Master ask me to execute a command: "%s" "%s' % (
+        log.msg('Master asks me to execute a command: "%s" "%s' % (
                 command, " ".join(args)
         ))
         log.msg('For builder: "%s" with environ: %s' % (builder, pprint.pformat(environ)))
         return {'result': 0, 'builder': builder}
+
+
+@defer.inlineCallbacks
+def remoteSendLog(ampProto):
+    sometext = "Just a short line"
+    res = yield ampProto.callRemote(RemoteAcceptLog, line=sometext)
+    defer.returnValue(res)
+
+@defer.inlineCallbacks
+def doConnection():
+    def connect():
+        from twisted.internet.endpoints import TCP4ClientEndpoint
+        from twisted.internet.protocol import Factory
+        endpoint = TCP4ClientEndpoint(reactor, "127.0.0.1", 1235)
+        factory = Factory()
+        factory.protocol = amp.AMP
+        return endpoint.connect(factory)
+    ampProto = yield connect()
+
+    remSendLogRes = yield remoteSendLog(ampProto)
+    log.msg('Remote print result: %s' % remSendLogRes )
 
 
 def main():
@@ -64,7 +85,9 @@ def main():
     pf = Factory()
     pf.protocol = Bot
     reactor.listenTCP(1234, pf)
+    d = doConnection()
     log.msg('fake_slave can now accept request from fake_master')
+    return d
 
 if __name__ == '__main__':
     log.startLogging(sys.stderr)
