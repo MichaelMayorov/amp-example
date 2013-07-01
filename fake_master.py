@@ -71,9 +71,6 @@ class Master(amp.AMP):
 
 
 def main():
-    pf = Factory()
-    pf.protocol = Master
-    reactor.listenTCP(1235, pf)
     log.msg('fake_master can now accept request from fake_slave')
     d = doConnection()
     return d
@@ -81,4 +78,10 @@ def main():
 if __name__ == '__main__':
     log.startLogging(sys.stderr)
     d = main()
+    @d.addBoth
+    def stop(x):
+        reactor.stop()
+        return x
+    d.addErrback(log.msg, 'from fake_master')
+
     reactor.run()
