@@ -59,3 +59,10 @@ class RemoteStartCommand(amp.Command):
         ('result', amp.Integer()),
         ('builder', amp.String()),
     ]
+
+class RemoteAcceptLog(amp.Command):
+    """
+    Accept log from fake_slave
+    """
+    arguments = [('line', amp.Unicode())]
+    response = [('result', amp.Integer())]
