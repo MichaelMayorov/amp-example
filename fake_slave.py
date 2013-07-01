@@ -8,6 +8,8 @@ from twisted.python import log
 from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog
 
 
+MAGIC_NUMBER = 4095
+
 class Bot(amp.AMP):
     @GetInfo.responder
     def getInfo(self):
@@ -65,8 +67,11 @@ class Bot(amp.AMP):
 def remoteSendLog(ampProto):
     sometext = "Just a short line"
     sometext2 = u"Привет мир! Hello world! こんにちは、世界！"
+    sometext3 = "".join([unichr(i) for i in xrange(65536)]) # crazy shit
     yield ampProto.callRemote(RemoteAcceptLog, line=sometext)
     yield ampProto.callRemote(RemoteAcceptLog, line=sometext2)
+    for i in range(0, len(sometext3), MAGIC_NUMBER):
+        yield ampProto.callRemote(RemoteAcceptLog, line=sometext3[i:i+MAGIC_NUMBER])
 
 @defer.inlineCallbacks
 def doConnection():
