@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import sys
 import pprint
 from twisted.internet import reactor, defer
@@ -62,8 +64,9 @@ class Bot(amp.AMP):
 @defer.inlineCallbacks
 def remoteSendLog(ampProto):
     sometext = "Just a short line"
-    res = yield ampProto.callRemote(RemoteAcceptLog, line=sometext)
-    defer.returnValue(res)
+    sometext2 = u"Привет мир! Hello world! こんにちは、世界！"
+    yield ampProto.callRemote(RemoteAcceptLog, line=sometext)
+    yield ampProto.callRemote(RemoteAcceptLog, line=sometext2)
 
 @defer.inlineCallbacks
 def doConnection():

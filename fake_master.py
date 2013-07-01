@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import sys
 import pprint
 from twisted.internet import reactor, defer
@@ -64,7 +66,7 @@ def doConnection():
 class Master(amp.AMP):
     @RemoteAcceptLog.responder
     def remoteAcceptLog(self, line):
-        log.msg('Slave send me a log line: %s' % line)
+        log.msg('Slave send me a log line: %s' % line.encode('utf-8'))
         return {'result': 0}
 
 

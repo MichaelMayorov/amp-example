@@ -64,5 +64,5 @@ class RemoteAcceptLog(amp.Command):
     """
     Accept log from fake_slave
     """
-    arguments = [('line', amp.String())]
+    arguments = [('line', amp.Unicode())]
     response = [('result', amp.Integer())]
