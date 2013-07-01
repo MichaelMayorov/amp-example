@@ -67,7 +67,7 @@ class Bot(amp.AMP):
 def remoteSendLog(ampProto):
     sometext = "Just a short line"
     sometext2 = u"Привет мир! Hello world! こんにちは、世界！"
-    sometext3 = "".join([unichr(i) for i in xrange(65536)]) # crazy shit
+    sometext3 = "".join([unichr(i) for i in xrange(6553)])
     yield ampProto.callRemote(RemoteAcceptLog, line=sometext)
     yield ampProto.callRemote(RemoteAcceptLog, line=sometext2)
     for i in range(0, len(sometext3), MAGIC_NUMBER):

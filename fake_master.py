@@ -81,9 +81,4 @@ def main():
 if __name__ == '__main__':
     log.startLogging(sys.stderr)
     d = main()
-#    @d.addBoth
-#    def stop(x):
-#        reactor.stop()
-#        return x
-#    d.addErrback(log.msg, 'from fake_master')
     reactor.run()
