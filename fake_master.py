@@ -67,7 +67,7 @@ class Master(amp.AMP):
     @RemoteAcceptLog.responder
     def remoteAcceptLog(self, line):
         log.msg('Slave send me a log line: %s' % line.encode('utf-8'))
-        return {'result': 0}
+        return {}
 
 
 def main():
