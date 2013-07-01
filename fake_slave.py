@@ -55,12 +55,14 @@ class Bot(amp.AMP):
         return {'result': 0}
 
     @RemoteStartCommand.responder
+    @defer.inlineCallbacks
     def remoteStartCommand(self, environ, command, args, builder):
         log.msg('Master asks me to execute a command: "%s" "%s' % (
                 command, " ".join(args)
         ))
         log.msg('For builder: "%s" with environ: %s' % (builder, pprint.pformat(environ)))
-        return {'result': 0, 'builder': builder}
+        yield self.callRemote(RemoteAcceptLog, line=u"hi")
+        defer.returnValue({'result': 0, 'builder': builder})
 
 
 @defer.inlineCallbacks
