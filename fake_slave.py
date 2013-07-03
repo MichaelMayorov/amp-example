@@ -61,19 +61,16 @@ class Bot(amp.AMP):
                 command, " ".join(args)
         ))
         log.msg('For builder: "%s" with environ: %s' % (builder, pprint.pformat(environ)))
-        yield self.callRemote(RemoteAcceptLog, line=u"hi")
+        sometext = "Just a short line"
+        sometext2 = u"Привет мир! Hello world! こんにちは、世界！"
+        sometext3 = "".join([unichr(i) for i in xrange(6553)])
+        yield self.callRemote(RemoteAcceptLog, line=sometext)
+        yield self.callRemote(RemoteAcceptLog, line=sometext2)
+        for i in range(0, len(sometext3), MAGIC_NUMBER):
+            yield self.callRemote(RemoteAcceptLog, line=sometext3[i:i+MAGIC_NUMBER])
+
         defer.returnValue({'result': 0, 'builder': builder})
 
-
-@defer.inlineCallbacks
-def remoteSendLog(ampProto):
-    sometext = "Just a short line"
-    sometext2 = u"Привет мир! Hello world! こんにちは、世界！"
-    sometext3 = "".join([unichr(i) for i in xrange(6553)])
-    yield ampProto.callRemote(RemoteAcceptLog, line=sometext)
-    yield ampProto.callRemote(RemoteAcceptLog, line=sometext2)
-    for i in range(0, len(sometext3), MAGIC_NUMBER):
-        yield ampProto.callRemote(RemoteAcceptLog, line=sometext3[i:i+MAGIC_NUMBER])
 
 @defer.inlineCallbacks
 def doConnection():
@@ -82,12 +79,9 @@ def doConnection():
         from twisted.internet.protocol import Factory
         endpoint = TCP4ClientEndpoint(reactor, "127.0.0.1", 1235)
         factory = Factory()
-        factory.protocol = amp.AMP
+        factory.protocol = Bot
         return endpoint.connect(factory)
     ampProto = yield connect()
-
-    remSendLogRes = yield remoteSendLog(ampProto)
-    log.msg('Remote print result: %s' % remSendLogRes )
 
 
 def main():
