@@ -41,29 +41,42 @@ def remoteStartCommand(ampProto):
     )
     defer.returnValue(res)
 
-@defer.inlineCallbacks
-def doConnection():
-    def connect():
-        endpoint = TCP4ClientEndpoint(reactor, "127.0.0.1", 1234)
-        factory = Factory()
-        factory.protocol = Master
-        return endpoint.connect(factory)
-    ampProto = yield connect()
-
-    info, builderListResult = yield defer.gatherResults([
-            getInfo(ampProto),
-            setBuilders(ampProto)
-    ])
-    remPrintRes = yield remotePrint(ampProto)
-    remStartCmd = yield remoteStartCommand(ampProto)
-
-    log.msg('Slave info: %s' % pprint.pformat(info))
-    log.msg('Slave setBuilderList result: %s' % builderListResult)
-    log.msg('Remote print result: %s' % remPrintRes)
-    log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
-
+# @defer.inlineCallbacks
+# def doConnection():
+#     def connect():
+#         endpoint = TCP4ClientEndpoint(reactor, "127.0.0.1", 1234)
+#         factory = Factory()
+#         factory.protocol = Master
+#         return endpoint.connect(factory)
+#     ampProto = yield connect()
+#
+#     info, builderListResult = yield defer.gatherResults([
+#             getInfo(ampProto),
+#             setBuilders(ampProto)
+#     ])
+#     remPrintRes = yield remotePrint(ampProto)
+#     remStartCmd = yield remoteStartCommand(ampProto)
+#
+#     log.msg('Slave info: %s' % pprint.pformat(info))
+#     log.msg('Slave setBuilderList result: %s' % builderListResult)
+#     log.msg('Remote print result: %s' % remPrintRes)
+#     log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
+#
 
 class Master(amp.AMP):
+    def connectionMade(self):
+        info, builderListResult = yield defer.gatherResults([
+                getInfo(self),
+                setBuilders(self)
+        ])
+        remPrintRes = yield remotePrint(self)
+        remStartCmd = yield remoteStartCommand(self)
+
+        log.msg('Slave info: %s' % pprint.pformat(info))
+        log.msg('Slave setBuilderList result: %s' % builderListResult)
+        log.msg('Remote print result: %s' % remPrintRes)
+        log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
+
     @RemoteAcceptLog.responder
     def remoteAcceptLog(self, line):
         log.msg('Slave send me a log line: %s' % line.encode('utf-8'))
@@ -75,16 +88,17 @@ def main():
     pf.protocol = Master
     reactor.listenTCP(1235, pf) 
     log.msg('fake_master can now accept request from fake_slave')
-    d = doConnection()
-    return d
+#    d = doConnection()
+#    return d
 
 if __name__ == '__main__':
     log.startLogging(sys.stderr)
-    d = main()
-    @d.addBoth
-    def stop(x):
-        reactor.stop()
-        return x
-    d.addErrback(log.msg, 'from fake_master')
+    main()
+#     d = main()
+#     @d.addBoth
+#     def stop(x):
+#         reactor.stop()
+#         return x
+#     d.addErrback(log.msg, 'from fake_master')
 
     reactor.run()

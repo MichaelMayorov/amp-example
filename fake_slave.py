@@ -72,12 +72,26 @@ class Bot(amp.AMP):
         defer.returnValue({'result': 0, 'builder': builder})
 
 
+@defer.inlineCallbacks
+def doConnection():
+    def connect():
+        from twisted.internet.endpoints import TCP4ClientEndpoint
+        from twisted.internet.protocol import Factory
+        endpoint = TCP4ClientEndpoint(reactor, "127.0.0.1", 1235)
+        factory = Factory()
+        factory.protocol = amp.AMP
+        return endpoint.connect(factory)
+    ampProto = yield connect()
+
+
 def main():
     from twisted.internet.protocol import Factory
     pf = Factory()
     pf.protocol = Bot
     reactor.listenTCP(1234, pf)
+    d = doConnection()
     log.msg('fake_slave can now accept request from fake_master')
+    return d
 
 if __name__ == '__main__':
     log.startLogging(sys.stderr)
