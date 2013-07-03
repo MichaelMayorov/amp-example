@@ -63,11 +63,8 @@ class Bot(amp.AMP):
         log.msg('For builder: "%s" with environ: %s' % (builder, pprint.pformat(environ)))
         sometext = "Just a short line"
         sometext2 = u"Привет мир! Hello world! こんにちは、世界！"
-        sometext3 = "".join([unichr(i) for i in xrange(6553)])
         yield self.callRemote(RemoteAcceptLog, line=sometext)
         yield self.callRemote(RemoteAcceptLog, line=sometext2)
-        for i in range(0, len(sometext3), MAGIC_NUMBER):
-            yield self.callRemote(RemoteAcceptLog, line=sometext3[i:i+MAGIC_NUMBER])
 
         defer.returnValue({'result': 0, 'builder': builder})
 

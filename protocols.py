@@ -1,5 +1,16 @@
 from twisted.protocols import amp
 
+class DebugAMP(amp.AMP):
+
+    def sendBox(self, box):
+        print "--> ", box
+        return amp.AMP.sendBox(self, box)
+
+    def ampBoxReceived(self, box):
+        print "<-- ", box
+        return amp.AMP.ampBoxReceived(self, box)
+
+
 class GetInfo(amp.Command):
     arguments = []
     response = [
