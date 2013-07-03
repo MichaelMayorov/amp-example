@@ -85,10 +85,6 @@ def doConnection():
 
 
 def main():
-    from twisted.internet.protocol import Factory
-    pf = Factory()
-    pf.protocol = Bot
-    reactor.listenTCP(1234, pf)
     d = doConnection()
     log.msg('fake_slave can now accept request from fake_master')
     return d
