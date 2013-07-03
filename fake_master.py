@@ -64,7 +64,9 @@ def remoteStartCommand(ampProto):
 #
 
 class Master(amp.AMP):
+    @defer.inlineCallbacks
     def connectionMade(self):
+        yield amp.AMP.connectionMade(self)
         info, builderListResult = yield defer.gatherResults([
                 getInfo(self),
                 setBuilders(self)

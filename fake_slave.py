@@ -79,7 +79,7 @@ def doConnection():
         from twisted.internet.protocol import Factory
         endpoint = TCP4ClientEndpoint(reactor, "127.0.0.1", 1235)
         factory = Factory()
-        factory.protocol = amp.AMP
+        factory.protocol = Bot
         return endpoint.connect(factory)
     ampProto = yield connect()
 
