@@ -41,27 +41,6 @@ def remoteStartCommand(ampProto):
     )
     defer.returnValue(res)
 
-# @defer.inlineCallbacks
-# def doConnection():
-#     def connect():
-#         endpoint = TCP4ClientEndpoint(reactor, "127.0.0.1", 1234)
-#         factory = Factory()
-#         factory.protocol = Master
-#         return endpoint.connect(factory)
-#     ampProto = yield connect()
-#
-#     info, builderListResult = yield defer.gatherResults([
-#             getInfo(ampProto),
-#             setBuilders(ampProto)
-#     ])
-#     remPrintRes = yield remotePrint(ampProto)
-#     remStartCmd = yield remoteStartCommand(ampProto)
-#
-#     log.msg('Slave info: %s' % pprint.pformat(info))
-#     log.msg('Slave setBuilderList result: %s' % builderListResult)
-#     log.msg('Remote print result: %s' % remPrintRes)
-#     log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
-#
 
 class Master(amp.AMP):
     @defer.inlineCallbacks
@@ -90,17 +69,8 @@ def main():
     pf.protocol = Master
     reactor.listenTCP(1235, pf) 
     log.msg('fake_master can now accept request from fake_slave')
-#    d = doConnection()
-#    return d
 
 if __name__ == '__main__':
     log.startLogging(sys.stderr)
     main()
-#     d = main()
-#     @d.addBoth
-#     def stop(x):
-#         reactor.stop()
-#         return x
-#     d.addErrback(log.msg, 'from fake_master')
-
     reactor.run()
