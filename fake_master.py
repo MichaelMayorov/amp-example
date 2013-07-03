@@ -46,7 +46,7 @@ def doConnection():
     def connect():
         endpoint = TCP4ClientEndpoint(reactor, "127.0.0.1", 1234)
         factory = Factory()
-        factory.protocol = amp.AMP
+        factory.protocol = Master
         return endpoint.connect(factory)
     ampProto = yield connect()
 
@@ -71,6 +71,9 @@ class Master(amp.AMP):
 
 
 def main():
+    pf = Factory()
+    pf.protocol = Master
+    reactor.listenTCP(1235, pf) 
     log.msg('fake_master can now accept request from fake_slave')
     d = doConnection()
     return d
