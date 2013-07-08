@@ -46,11 +46,11 @@ def remoteStartCommand(ampProto):
 @defer.inlineCallbacks
 def requestSlave(ampProto):
     info, builderListResult = yield defer.gatherResults([
-            getInfo(self),
-            setBuilders(self)
+            getInfo(ampProto),
+            setBuilders(ampProto)
     ])
-    remPrintRes = yield remotePrint(self)
-    remStartCmd = yield remoteStartCommand(self)
+    remPrintRes = yield remotePrint(ampProto)
+    remStartCmd = yield remoteStartCommand(ampProto)
 
     log.msg('Slave info: %s' % pprint.pformat(info))
     log.msg('Slave setBuilderList result: %s' % builderListResult)
@@ -60,15 +60,18 @@ def requestSlave(ampProto):
 
 class Master(DebugAMP):
     @RemoteAuth.responder
-    @defer.inlineCallbacks
     def authSlave(self, user, password, features):
         if user == 'user' and password != 'password':
-            self.disconnect()
+            log.msg('Invalid credentials!')
+            error = [{'key': 'Error', 'value': 'Login or password incorrect'}]
+            return {'features': error}
+        log.msg('Slave authenticated!')
         self.slave_authenticated = True
-        yield requestSlave(self)
-        log.msg('Slave feauture negotiation vector: %s' % pprint.pformat(feautures))
+        requestSlave(self)
+        log.msg('Slave feature negotiation vector: %s' % pprint.pformat(features))
         features = [{'key': 'feature1', 'value': 'bar1'}, {'key': 'feature2', 'value': 'baz1'}]
-        defer.returnValue({'features': features})
+        return {'features': features}
+#        defer.returnValue({'features': features})
 
 #     @defer.inlineCallbacks
 #     def connectionMade(self):
@@ -88,7 +91,8 @@ class Master(DebugAMP):
     @RemoteAcceptLog.responder
     def remoteAcceptLog(self, line):
         if hasattr(self, 'slave_authenticated') is False:
-            self.disconnect()
+            log.msg('Log streaming rejected, because slavery didn\'t pass authentication')
+            return {}
         log.msg('Slave send me a log line: %s' % line.encode('utf-8'))
         return {}
 

@@ -83,16 +83,16 @@ class RemoteAuth(amp.Command):
     arguments = [
         ('user', amp.String()),
         ('password', amp.String()),
-        ('features', amp.AmpList(
+        ('features', amp.AmpList([
             ('key', amp.String()),
             ('value', amp.String())
-            )
+            ])
         )
     ]
     response = [
-        ('features', amp.AmpList(
+        ('features', amp.AmpList([
             ('key', amp.String()),
             ('value', amp.String())
-            )
+            ])
         )
     ]
