@@ -6,7 +6,8 @@ from twisted.internet import reactor, defer
 from twisted.internet.protocol import Factory
 from twisted.protocols import amp
 from twisted.python import log
-from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog
+from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog,\
+    RemoteAuth
 from protocols import DebugAMP
 from twisted.internet.endpoints import TCP4ClientEndpoint
 
@@ -42,25 +43,52 @@ def remoteStartCommand(ampProto):
     )
     defer.returnValue(res)
 
+@defer.inlineCallbacks
+def requestSlave(ampProto):
+    info, builderListResult = yield defer.gatherResults([
+            getInfo(self),
+            setBuilders(self)
+    ])
+    remPrintRes = yield remotePrint(self)
+    remStartCmd = yield remoteStartCommand(self)
+
+    log.msg('Slave info: %s' % pprint.pformat(info))
+    log.msg('Slave setBuilderList result: %s' % builderListResult)
+    log.msg('Remote print result: %s' % remPrintRes)
+    log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
+
 
 class Master(DebugAMP):
+    @RemoteAuth.responder
     @defer.inlineCallbacks
-    def connectionMade(self):
-        yield amp.AMP.connectionMade(self)
-        info, builderListResult = yield defer.gatherResults([
-                getInfo(self),
-                setBuilders(self)
-        ])
-        remPrintRes = yield remotePrint(self)
-        remStartCmd = yield remoteStartCommand(self)
+    def authSlave(self, user, password, features):
+        if user == 'user' and password != 'password':
+            self.disconnect()
+        self.slave_authenticated = True
+        yield requestSlave(self)
+        log.msg('Slave feauture negotiation vector: %s' % pprint.pformat(feautures))
+        features = [{'key': 'feature1', 'value': 'bar1'}, {'key': 'feature2', 'value': 'baz1'}]
+        defer.returnValue({'features': features})
 
-        log.msg('Slave info: %s' % pprint.pformat(info))
-        log.msg('Slave setBuilderList result: %s' % builderListResult)
-        log.msg('Remote print result: %s' % remPrintRes)
-        log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
+#     @defer.inlineCallbacks
+#     def connectionMade(self):
+#         yield amp.AMP.connectionMade(self)
+#         info, builderListResult = yield defer.gatherResults([
+#                 getInfo(self),
+#                 setBuilders(self)
+#         ])
+#         remPrintRes = yield remotePrint(self)
+#         remStartCmd = yield remoteStartCommand(self)
+#
+#         log.msg('Slave info: %s' % pprint.pformat(info))
+#         log.msg('Slave setBuilderList result: %s' % builderListResult)
+#         log.msg('Remote print result: %s' % remPrintRes)
+#         log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
 
     @RemoteAcceptLog.responder
     def remoteAcceptLog(self, line):
+        if hasattr(self, 'slave_authenticated') is False:
+            self.disconnect()
         log.msg('Slave send me a log line: %s' % line.encode('utf-8'))
         return {}
 

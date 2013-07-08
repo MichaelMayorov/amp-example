@@ -5,7 +5,8 @@ import pprint
 from twisted.internet import reactor, defer
 from twisted.protocols import amp
 from twisted.python import log
-from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog
+from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand,\
+    RemoteAcceptLog, RemoteAuth
 
 
 MAGIC_NUMBER = 4095
@@ -70,6 +71,14 @@ class Bot(amp.AMP):
 
 
 @defer.inlineCallbacks
+def sendAuthReq(ampProto):
+    user, password = 'user', 'password'
+    my_features = [{'key': 'feature1', 'value': 'bar'}, {'key': 'feature2', 'value': 'baz'}]
+    master_features = yield ampProto.callRemote(RemoteAuth, user=user, password=password, features=my_features)
+    defer.returnValue(master_features)
+
+
+@defer.inlineCallbacks
 def doConnection():
     def connect():
         from twisted.internet.endpoints import TCP4ClientEndpoint
@@ -79,6 +88,7 @@ def doConnection():
         factory.protocol = Bot
         return endpoint.connect(factory)
     ampProto = yield connect()
+    master_feautures = yield sendAuthReq(ampProto)
 
 
 def main():
