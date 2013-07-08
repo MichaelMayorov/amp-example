@@ -7,6 +7,7 @@ from twisted.internet.protocol import Factory
 from twisted.protocols import amp
 from twisted.python import log
 from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog
+from protocols import DebugAMP
 from twisted.internet.endpoints import TCP4ClientEndpoint
 
 
@@ -42,7 +43,7 @@ def remoteStartCommand(ampProto):
     defer.returnValue(res)
 
 
-class Master(amp.AMP):
+class Master(DebugAMP):
     @defer.inlineCallbacks
     def connectionMade(self):
         yield amp.AMP.connectionMade(self)
