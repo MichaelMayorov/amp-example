@@ -5,7 +5,8 @@ import pprint
 from twisted.internet import reactor, defer
 from twisted.protocols import amp
 from twisted.python import log
-from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog
+from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand,\
+    RemoteAcceptLog, RemoteAuth, RemoteInterrupt, RemoteSlaveShutdown
 
 
 MAGIC_NUMBER = 4095
@@ -68,6 +69,25 @@ class Bot(amp.AMP):
 
         defer.returnValue({'result': 0, 'builder': builder})
 
+    @RemoteInterrupt.responder
+    def remoteInterrupt(self, command):
+        log.msg('Interrupting command: "%s"' % command)
+        return {}
+
+    @RemoteSlaveShutdown.responder
+    def remoteSlaveShutdown(self):
+        log.msg('Master asks me to stop')
+        reactor.stop()
+        return {}
+
+
+@defer.inlineCallbacks
+def sendAuthReq(ampProto):
+    user, password = 'user', 'password'
+    my_features = [{'key': 'connection_type', 'value': 'slave'}]
+    master_features = yield ampProto.callRemote(RemoteAuth, user=user, password=password, features=my_features)
+    defer.returnValue(master_features)
+
 
 @defer.inlineCallbacks
 def doConnection():
@@ -79,6 +99,7 @@ def doConnection():
         factory.protocol = Bot
         return endpoint.connect(factory)
     ampProto = yield connect()
+    master_feautures = yield sendAuthReq(ampProto)
 
 
 def main():

@@ -78,3 +78,29 @@ class RemoteAcceptLog(amp.Command):
     arguments = [('line', amp.Unicode())]
     response = []
     requiresAnswer = False
+
+class RemoteAuth(amp.Command):
+    arguments = [
+        ('user', amp.String()),
+        ('password', amp.String()),
+        ('features', amp.AmpList([
+            ('key', amp.String()),
+            ('value', amp.String())
+            ])
+        )
+    ]
+    response = [
+        ('features', amp.AmpList([
+            ('key', amp.String()),
+            ('value', amp.String())
+            ])
+        )
+    ]
+
+class RemoteInterrupt(amp.Command):
+    arguments = [('command', amp.String())]
+    response = []
+
+class RemoteSlaveShutdown(amp.Command):
+    arguments = []
+    response = []
