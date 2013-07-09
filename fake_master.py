@@ -7,7 +7,7 @@ from twisted.internet.protocol import Factory
 from twisted.protocols import amp
 from twisted.python import log
 from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog,\
-    RemoteAuth
+    RemoteAuth, RemoteInterrupt, RemoteSlaveShutdown
 from protocols import DebugAMP
 from twisted.internet.endpoints import TCP4ClientEndpoint
 
@@ -43,6 +43,7 @@ def remoteStartCommand(ampProto):
     )
     defer.returnValue(res)
 
+
 @defer.inlineCallbacks
 def requestSlave(ampProto):
     info, builderListResult = yield defer.gatherResults([
@@ -56,6 +57,9 @@ def requestSlave(ampProto):
     log.msg('Slave setBuilderList result: %s' % builderListResult)
     log.msg('Remote print result: %s' % remPrintRes)
     log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
+
+    yield ampProto.callRemote(RemoteInterrupt, command='ls')
+    yield ampProto.callRemote(RemoteSlaveShutdown)
 
 
 class Master(DebugAMP):

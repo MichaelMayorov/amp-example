@@ -96,3 +96,11 @@ class RemoteAuth(amp.Command):
             ])
         )
     ]
+
+class RemoteInterrupt(amp.Command):
+    arguments = [('command', amp.String())]
+    response = []
+
+class RemoteSlaveShutdown(amp.Command):
+    arguments = []
+    response = []

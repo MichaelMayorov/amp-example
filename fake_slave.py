@@ -6,7 +6,7 @@ from twisted.internet import reactor, defer
 from twisted.protocols import amp
 from twisted.python import log
 from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand,\
-    RemoteAcceptLog, RemoteAuth
+    RemoteAcceptLog, RemoteAuth, RemoteInterrupt, RemoteSlaveShutdown
 
 
 MAGIC_NUMBER = 4095
@@ -68,6 +68,17 @@ class Bot(amp.AMP):
         yield self.callRemote(RemoteAcceptLog, line=sometext2)
 
         defer.returnValue({'result': 0, 'builder': builder})
+
+    @RemoteInterrupt.responder
+    def remoteInterrupt(self, command):
+        log.msg('Interrupting command: "%s"' % command)
+        return {}
+
+    @RemoteSlaveShutdown.responder
+    def remoteSlaveShutdown(self):
+        log.msg('Master asks me to stop')
+        reactor.stop()
+        return {}
 
 
 @defer.inlineCallbacks
