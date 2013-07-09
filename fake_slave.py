@@ -73,7 +73,7 @@ class Bot(amp.AMP):
 @defer.inlineCallbacks
 def sendAuthReq(ampProto):
     user, password = 'user', 'password'
-    my_features = [{'key': 'feature1', 'value': 'bar'}, {'key': 'feature2', 'value': 'baz'}]
+    my_features = [{'key': 'connection_type', 'value': 'slave'}]
     master_features = yield ampProto.callRemote(RemoteAuth, user=user, password=password, features=my_features)
     defer.returnValue(master_features)
 

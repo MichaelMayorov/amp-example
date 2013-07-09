@@ -71,22 +71,6 @@ class Master(DebugAMP):
         log.msg('Slave feature negotiation vector: %s' % pprint.pformat(features))
         features = [{'key': 'feature1', 'value': 'bar1'}, {'key': 'feature2', 'value': 'baz1'}]
         return {'features': features}
-#        defer.returnValue({'features': features})
-
-#     @defer.inlineCallbacks
-#     def connectionMade(self):
-#         yield amp.AMP.connectionMade(self)
-#         info, builderListResult = yield defer.gatherResults([
-#                 getInfo(self),
-#                 setBuilders(self)
-#         ])
-#         remPrintRes = yield remotePrint(self)
-#         remStartCmd = yield remoteStartCommand(self)
-#
-#         log.msg('Slave info: %s' % pprint.pformat(info))
-#         log.msg('Slave setBuilderList result: %s' % builderListResult)
-#         log.msg('Remote print result: %s' % remPrintRes)
-#         log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
 
     @RemoteAcceptLog.responder
     def remoteAcceptLog(self, line):
