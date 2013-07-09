@@ -45,7 +45,7 @@ def remoteStartCommand(ampProto):
 
 
 @defer.inlineCallbacks
-def requestSlave(ampProto):
+def Hello(ampProto):
     info, builderListResult = yield defer.gatherResults([
             getInfo(ampProto),
             setBuilders(ampProto)
@@ -71,7 +71,7 @@ class Master(DebugAMP):
             return {'features': error}
         log.msg('Slave authenticated!')
         self.slave_authenticated = True
-        requestSlave(self)
+        Hello(self)
         log.msg('Slave feature negotiation vector: %s' % pprint.pformat(features))
         features = [{'key': 'feature1', 'value': 'bar1'}, {'key': 'feature2', 'value': 'baz1'}]
         return {'features': features}
