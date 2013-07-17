@@ -20,8 +20,8 @@ def getInfo(ampProto):
 @defer.inlineCallbacks
 def setBuilders(ampProto):
     builders = [
-        {'name': 'python2.7', 'dir': '/build/py2.7'},
-        {'name': 'python3', 'dir': '/build/py3'}
+        {'name': 'python2.7', 'dir': 'py2.7'},
+        {'name': 'python3', 'dir': 'py3'}
         ]
     builderListResult = yield ampProto.callRemote(SetBuilderList, builders=builders) 
     defer.returnValue(builderListResult)
