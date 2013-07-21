@@ -6,10 +6,10 @@ from twisted.internet import reactor, defer
 from twisted.internet.protocol import Factory
 from twisted.protocols import amp
 from twisted.python import log
-from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog,\
-    RemoteAuth, RemoteInterrupt, RemoteSlaveShutdown
 from protocols import DebugAMP
 from twisted.internet.endpoints import TCP4ClientEndpoint
+from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog,\
+RemoteAuth, RemoteInterrupt, RemoteSlaveShutdown, ShellBbCommand
 
 
 @defer.inlineCallbacks
@@ -43,6 +43,18 @@ def remoteStartCommand(ampProto):
     )
     defer.returnValue(res)
 
+@defer.inlineCallbacks
+def remoteRunShellCommand(ampProto):
+    error = yield ampProto.callRemote(ShellBbCommand,
+        builder='python2.7', command=['/bin/ls', '-l', '/'], workdir='./',
+        env=[{'key': 'foo', 'value': 'bar'}], initial_stdin='Initial stdin',
+        want_stdout='want_stdout', want_stderr='want_stderr', usePTY=True,
+        not_really=True, timeout=60.0, maxTime=300.0, 
+        logfiles=[{'key': 'bb', 'value': 'slave.log'}], follow='follow',
+        logEnviron=True
+    )
+    defer.returnValue(error)
+
 
 @defer.inlineCallbacks
 def Hello(ampProto):
@@ -52,11 +64,15 @@ def Hello(ampProto):
     ])
     remPrintRes = yield remotePrint(ampProto)
     remStartCmd = yield remoteStartCommand(ampProto)
+    shellCmdErr = yield remoteRunShellCommand(ampProto)
+
 
     log.msg('Slave info: %s' % pprint.pformat(info))
     log.msg('Slave setBuilderList result: %s' % builderListResult)
     log.msg('Remote print result: %s' % remPrintRes)
     log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
+    if shellCmdErr['error'] != "":
+        log.msg("Error while trying to execute shell command on slave: \"%s\"" % shellCmdErr)
 
     yield ampProto.callRemote(RemoteInterrupt, command='ls')
     yield ampProto.callRemote(RemoteSlaveShutdown)
