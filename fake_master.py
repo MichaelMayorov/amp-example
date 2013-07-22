@@ -9,7 +9,7 @@ from twisted.python import log
 from protocols import DebugAMP
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog,\
-RemoteAuth, RemoteInterrupt, RemoteSlaveShutdown, ShellBbCommand
+RemoteAuth, RemoteInterrupt, RemoteSlaveShutdown, ShellBbCommand, RemoteUpdateSendRC
 
 
 @defer.inlineCallbacks
@@ -63,14 +63,14 @@ def Hello(ampProto):
             setBuilders(ampProto)
     ])
     remPrintRes = yield remotePrint(ampProto)
-    remStartCmd = yield remoteStartCommand(ampProto)
+    # remStartCmd = yield remoteStartCommand(ampProto) # not function
     shellCmdErr = yield remoteRunShellCommand(ampProto)
 
 
     log.msg('Slave info: %s' % pprint.pformat(info))
     log.msg('Slave setBuilderList result: %s' % builderListResult)
     log.msg('Remote print result: %s' % remPrintRes)
-    log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
+    # log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
     if shellCmdErr['error'] != "":
         log.msg("Error while trying to execute shell command on slave: \"%s\"" % shellCmdErr)
 
@@ -93,13 +93,17 @@ class Master(DebugAMP):
         return {'features': features}
 
     @RemoteAcceptLog.responder
-    def remoteAcceptLog(self, line):
+    def remoteAcceptLog(self, builder, logName, stream, data):
         if hasattr(self, 'slave_authenticated') is False:
             log.msg('Log streaming rejected, because slavery didn\'t pass authentication')
             return {}
-        log.msg('Slave send me a log line: %s' % line.encode('utf-8'))
+        log.msg('Slave builder: "%s" stream: "%s" data:\n%  s' % (builder, stream, data.encode('utf-8')))
         return {}
 
+    @RemoteUpdateSendRC.responder
+    def remoteUpdateRC(self, builder, rc):
+        log.msg('Slave builder: "%s" done command with rc: %d' % (builder, rc))
+        return {}
 
 def main():
     pf = Factory()
