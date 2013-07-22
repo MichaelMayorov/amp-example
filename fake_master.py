@@ -97,7 +97,9 @@ class Master(DebugAMP):
         if hasattr(self, 'slave_authenticated') is False:
             log.msg('Log streaming rejected, because slavery didn\'t pass authentication')
             return {}
-        log.msg('Slave builder: "%s" stream: "%s" data:\n%  s' % (builder, stream, data.encode('utf-8')))
+        log.msg('Slave builder: "%s", stream: "%s", log name: "%s", data:\n%  s'\
+            % (builder, stream, logName, data)
+        )
         return {}
 
     @RemoteUpdateSendRC.responder
