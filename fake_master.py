@@ -9,7 +9,8 @@ from twisted.python import log
 from protocols import DebugAMP
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from protocols import GetInfo, SetBuilderList, RemotePrint, RemoteStartCommand, RemoteAcceptLog,\
-RemoteAuth, RemoteInterrupt, RemoteSlaveShutdown, ShellBbCommand, RemoteUpdateSendRC
+RemoteAuth, RemoteInterrupt, RemoteSlaveShutdown, ShellBbCommand, RemoteUpdateSendRC,\
+MkdirBbCommand
 
 
 @defer.inlineCallbacks
@@ -55,6 +56,12 @@ def remoteRunShellCommand(ampProto):
     )
     defer.returnValue(error)
 
+@defer.inlineCallbacks
+def remoteRunMkdirCommand(ampProto):
+    error = yield ampProto.callRemote(MkdirBbCommand,
+        builder='python2.7', dir="remote-mkdir",
+    )
+    defer.returnValue(error)
 
 @defer.inlineCallbacks
 def Hello(ampProto):
@@ -65,14 +72,16 @@ def Hello(ampProto):
     remPrintRes = yield remotePrint(ampProto)
     # remStartCmd = yield remoteStartCommand(ampProto) # not function
     shellCmdErr = yield remoteRunShellCommand(ampProto)
-
+    mkdirErr = yield remoteRunMkdirCommand(ampProto)
 
     log.msg('Slave info: %s' % pprint.pformat(info))
     log.msg('Slave setBuilderList result: %s' % builderListResult)
     log.msg('Remote print result: %s' % remPrintRes)
     # log.msg('Remote execution\'s result: %s' % pprint.pformat(remStartCmd))
-    if shellCmdErr['error'] != "":
-        log.msg("Error while trying to execute shell command on slave: \"%s\"" % shellCmdErr)
+    if shellCmdErr['error'] != '':
+        log.msg('Error while trying to execute shell command on slave: "%s"' % shellCmdErr)
+    if mkdirErr['error'] != '':
+        log.msg('Error while trying to execute mkdir command on slave: "%s"' % mkdirErr)
 
     yield ampProto.callRemote(RemoteInterrupt, command='ls')
     yield ampProto.callRemote(RemoteSlaveShutdown)
